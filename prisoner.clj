@@ -36,7 +36,7 @@
 				[(merge-with + scores {a-name a-payoff}, {b-name b-payoff})
 				 (merge-with concat games {name-key [[a-turn b-turn]]})]))
 
-;; 
+;; Play one round of all against all 
 (defn round [scores games player-pairs]
 	(cond
 		(empty? player-pairs) [scores games]
@@ -46,6 +46,7 @@
 				;(println new-games)
 				(round new-scores new-games (rest player-pairs)))))
 
+;; helper function
 (defn tourney* [remaining scores games player-pairs]
 	(cond
 		(<= remaining 0) scores
@@ -69,12 +70,16 @@
 
 ;; players
 
+;; Always cooperate
 (defn cooperator [state] :coop)
 
+;; Always defect
 (defn defector [state] :defect)
 
+;; Randomly choose
 (defn gaussian [state] (if (= (rand-int 2) 0) :coop :defect))
 
+;; Tit for tat — cooperate at first, then mirror other
 (defn tit-for-tat [state]
 	(let [l (first state)]
 		(if (nil? l) 
@@ -82,6 +87,7 @@
 			(let [other-play (last (opponent-history state))]
       	(if (= other-play :coop) :coop :defect)))))
 
+;; Evil tit for tat — cooperate at first, then do opposite
 (defn evil-tit-for-tat [msg & [state]]
 	(let [l (first state)]
 		(if (nil? l) 
@@ -89,12 +95,15 @@
 			(let [other-play (last (opponent-history state))]
       	(if (= other-play :coop) :defect :coop)))))
 
+;; return a function that responds to :name and :play
+;; messages
 (defn create-player [name function]
 	(fn [msg & [state]]
 		(cond
 			(= msg :name) name
 			(= msg :play) (function state))))
 
+;; create all kinds of players
 (defn create-players []
 	[(create-player (gensym "Coop-") cooperator)
 	 (create-player (gensym "Def-") defector)
