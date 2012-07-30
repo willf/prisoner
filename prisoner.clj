@@ -1,9 +1,9 @@
 ;; scoring and judging
 
-;;	                Player A
-;;                  coop	defect
-;;Player B	coop	  (3,3)	(0,5)
-;;          defect	(5,0)	(1,1)
+;; Payoff matrix      Player A
+;;                  coop  defect
+;; Player B coop   (3,3)  (0,5)
+;;          defect (5,0)  (1,1)
 
 ;; score a game 
 (defn score [a b]
