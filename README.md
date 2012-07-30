@@ -16,3 +16,4 @@ To create a new player:
 TODO:
 
 - probably best to fix how deep the history goes back
+- add the new Penrose random players
