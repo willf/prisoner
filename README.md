@@ -5,9 +5,7 @@ Iterative Prisoners' Dilemma tournament
 
 For now:
 
-```bash
-python prisoner.py
-```
+    $ python prisoner.py
 
 Modify the code to create new players, etc.
 
