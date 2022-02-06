@@ -1,5 +1,13 @@
-prisoner
-========
+# prisoner
+
+Iterative Prisoners' Dilemma tournament
+(Python)
+
+For now:
+
+python prisoner.py
+
+Modify the code to create new players, etc.
 
 Iterative Prisoners' Dilemma tournament (Clojure)
 
