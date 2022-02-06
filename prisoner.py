@@ -1,0 +1,173 @@
+from itertools import combinations
+import random
+
+## Implement a Prisoner's Dilemma tournament
+
+
+## Scoring and judging:
+
+# Payoff matrix      Player A
+#                  coop  defect
+# Player B coop   (3,3)  (0,5)
+#          defect (5,0)  (1,1)
+
+
+# Define the payoff matrix
+
+
+class Player:
+    def __init__(self, name="Player"):
+        self.name = name
+        self.memory = {}
+
+    def cooperate(self):
+        return PrisonersDilemmaTourney.COOPERATION
+
+    def defect(self):
+        return PrisonersDilemmaTourney.DEFECTION
+
+    def move(self, opponent):
+        return self.defect()
+
+    def observe(self, opponent, move):
+        if self.memory.get((opponent, move)) is None:
+            self.memory[opponent] = []
+        self.memory[opponent].append(move)
+
+    def remember(self, opponent):
+        return self.memory.get(opponent, [])
+
+
+class Defector(Player):
+    def __init__(self, name="Defector"):
+        super().__init__(name)
+
+    def move(self, opponent):
+        return self.defect()
+
+
+class Cooperator(Player):
+    def __init__(self, name="Cooperator"):
+        super().__init__(name)
+
+    def move(self, opponent):
+        return self.cooperate()
+
+
+class RandomPlayer(Player):
+    def __init__(self, name="RandomPlayer"):
+        super().__init__(name)
+
+    def move(self, opponent):
+        if random.randint(0, 1) == 0:
+            return self.defect()
+        else:
+            return self.cooperate()
+
+
+class TitForTatPlayer(Player):
+    def __init__(self, name="TitForTatPlayer"):
+        super().__init__(name)
+
+    def move(self, opponent):
+        memory = self.remember(opponent)
+        if len(memory) == 0:
+            return self.cooperate()
+        else:
+            return memory[-1]
+
+
+class PrisonersDilemmaTourney:
+    COOPERATION = 0
+    DEFECTION = 1
+
+    def __init__(self, players=[]):
+        self.matrix = [[(3, 3), (0, 5)], [(5, 0), (1, 1)]]
+        self.players = players
+        self.scoreboard = {}
+        for player in players:
+            self.scoreboard[player] = 0
+        self.previous_moves = {}
+        for player in players:
+            self.previous_moves[player] = []
+
+    def payout(self, moveA: int, moveB: int):
+        """Returns the payoff for the two moves
+        >>> p = PrisonersDilemmaTourney()
+        >>> p.payout(p.COOPERATION, p.COOPERATION)
+        (3, 3)
+        >>> p.payout(p.COOPERATION, p.DEFECTION)
+        (0, 5)
+        >>> p.payout(p.DEFECTION, p.COOPERATION)
+        (5, 0)
+        >>> p.payout(p.DEFECTION, p.DEFECTION)
+        (1, 1)
+        """
+        if moveA not in [self.COOPERATION, self.DEFECTION]:
+            raise ValueError("Move must be either COOPERATION or DEFECTION")
+        if moveB not in [self.COOPERATION, self.DEFECTION]:
+            raise ValueError("Move must be either COOPERATION or DEFECTION")
+        return self.matrix[moveA][moveB]
+
+    def play(self, playerA: Player, playerB: Player):
+        """Play a game and update the players' scores
+        >>> p = PrisonersDilemmaTourney([Player(), Player()])
+        >>> p.play(p.players[0], p.players[1])
+        ((1, 1), (1, 1))
+        >>> p.scoreboard[p.players[0]]
+        1
+        >>> p.scoreboard[p.players[1]]
+        1
+        >>> p.previous_moves[p.players[0]]
+        [1]
+        >>> p.previous_moves[p.players[1]]
+        [1]
+        """
+        moveA = playerA.move(playerB)
+        moveB = playerB.move(playerA)
+        scoreA, scoreB = self.payout(moveA, moveB)
+        self.scoreboard[playerA] += scoreA
+        self.scoreboard[playerB] += scoreB
+        self.previous_moves[playerA].append(moveA)
+        self.previous_moves[playerB].append(moveB)
+        playerA.observe(playerB, moveB)
+        playerB.observe(playerA, moveA)
+        return ((moveA, scoreA), (moveB, scoreB))
+
+    def play_round(self):
+        for playerA, playerB in combinations(self.players, 2):
+            self.play(playerA, playerB)
+
+    def play_tournament(self, n_rounds=10):
+        for i in range(n_rounds):
+            self.play_round()
+
+    def print_scoreboard(self):
+        for i, player in enumerate(
+            sorted(self.players, key=lambda x: self.scoreboard[x], reverse=True)
+        ):
+            print(f"{i+1:2}: {player.name}: {self.scoreboard[player]}")
+
+
+if __name__ == "__main__":
+
+    p = PrisonersDilemmaTourney(
+        [
+            RandomPlayer(name="Random 1"),
+            RandomPlayer(name="Random 2"),
+            RandomPlayer(name="Random 3"),
+            Cooperator(name="Cooperator 1"),
+            Cooperator(name="Cooperator 2"),
+            Cooperator(name="Cooperator 3"),
+            Defector(name="Defector 1"),
+            Defector(name="Defector 2"),
+            Defector(name="Defector 3"),
+            TitForTatPlayer("TitForTat 1"),
+            TitForTatPlayer("TitForTat 2"),
+            TitForTatPlayer("TitForTat 3"),
+        ]
+    )
+    rounds = 1000
+    p.play_tournament(n_rounds=rounds)
+    print(f"After {rounds} rounds, the scores are:")
+    p.print_scoreboard()
