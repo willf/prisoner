@@ -77,6 +77,38 @@ class TitForTatPlayer(Player):
             return memory[-1]
 
 
+class TitForTwoTatsPlayer(Player):
+    def __init__(self, name="TitForTwoTatsPlayer"):
+        super().__init__(name)
+
+    def move(self, opponent):
+        memory = self.remember(opponent)
+        if len(memory) <= 1:
+            return self.cooperate()
+        else:
+            last_two = memory[-2:]
+            if last_two[0] == last_two[1] and last_two[0] == self.defect():
+                return self.defect()
+            else:
+                return self.cooperate()
+
+
+class EvilTitForTatPlayer(Player):
+    def __init__(self, name="EvilTitForTatPlayer"):
+        super().__init__(name)
+
+    def move(self, opponent):
+        memory = self.remember(opponent)
+        if len(memory) == 0:
+            return self.cooperate()
+        else:
+            last = memory[-1]
+            if last == self.defect():
+                return self.cooperate()
+            else:
+                return self.defect()
+
+
 class PrisonersDilemmaTourney:
     COOPERATION = 0
     DEFECTION = 1
@@ -151,23 +183,118 @@ class PrisonersDilemmaTourney:
 
 if __name__ == "__main__":
 
-    p = PrisonersDilemmaTourney(
-        [
-            RandomPlayer(name="Random 1"),
-            RandomPlayer(name="Random 2"),
-            RandomPlayer(name="Random 3"),
-            Cooperator(name="Cooperator 1"),
-            Cooperator(name="Cooperator 2"),
-            Cooperator(name="Cooperator 3"),
-            Defector(name="Defector 1"),
-            Defector(name="Defector 2"),
-            Defector(name="Defector 3"),
-            TitForTatPlayer("TitForTat 1"),
-            TitForTatPlayer("TitForTat 2"),
-            TitForTatPlayer("TitForTat 3"),
-        ]
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Play a tournament of Prisoners Dilemma"
     )
-    rounds = 1000
+    parser.add_argument(
+        "--rounds",
+        type=int,
+        default=100,
+        help="Number of rounds in the tournament",
+    )
+    parser.add_argument(
+        "--random",
+        "-r",
+        type=int,
+        default=0,
+        help="Number of random players to add to the tournament",
+    )
+
+    parser.add_argument(
+        "--titfortat",
+        "-t",
+        type=int,
+        default=0,
+        help="Number of titfortat players to add to the tournament",
+    )
+
+    parser.add_argument(
+        "--eviltitfortat",
+        "-e",
+        type=int,
+        default=0,
+        help="Number of evil titfortat players to add to the tournament",
+    )
+
+    parser.add_argument(
+        "--cooperator",
+        "-c",
+        type=int,
+        default=0,
+        help="Number of cooperator players to add to the tournament",
+    )
+
+    parser.add_argument(
+        "--defector",
+        "-d",
+        type=int,
+        default=0,
+        help="Number of defector players to add to the tournament",
+    )
+
+    parser.add_argument(
+        "--titfortwotats",
+        "-2",
+        type=int,
+        default=0,
+        help="Number of titfortwotats players to add to the tournament",
+    )
+
+    parser.add_argument(
+        "--oneplayer",
+        "-1",
+        action="store_true",
+        default=False,
+        help="Add one player of each type to the tournament",
+    )
+
+    args = parser.parse_args()
+
+    players = []
+
+    tournament = PrisonersDilemmaTourney(players)
+    tournament.play_tournament(args.rounds)
+    tournament.print_scoreboard()
+
+    args = parser.parse_args()
+
+    players = []
+    if args.random:
+        for i in range(args.random):
+            players.append(RandomPlayer(name=f"RandomPlayer {i+1}"))
+
+    if args.titfortat:
+        for i in range(args.titfortat):
+            players.append(TitForTatPlayer(name=f"TitForTatPlayer {i+1}"))
+
+    if args.eviltitfortat:
+        for i in range(args.eviltitfortat):
+            players.append(EvilTitForTatPlayer(name=f"EvilTitForTatPlayer {i+1}"))
+
+    if args.cooperator:
+        for i in range(args.cooperator):
+            players.append(Cooperator(name=f"Cooperator {i+1}"))
+
+    if args.defector:
+        for i in range(args.defector):
+            players.append(Defector(name=f"Defector {i+1}"))
+
+    if args.titfortwotats:
+        for i in range(args.titfortwotats):
+            players.append(TitForTwoTatsPlayer(name=f"TitForTwoTatsPlayer {i+1}"))
+
+    if args.oneplayer:
+        players.append(RandomPlayer())
+        players.append(TitForTatPlayer())
+        players.append(EvilTitForTatPlayer())
+        players.append(Cooperator())
+        players.append(Defector())
+        players.append(TitForTwoTatsPlayer())
+
+    p = PrisonersDilemmaTourney(players=players)
+    rounds = args.rounds
     p.play_tournament(n_rounds=rounds)
     print(f"After {rounds} rounds, the scores are:")
     p.print_scoreboard()
