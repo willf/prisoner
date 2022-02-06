@@ -1,7 +1,6 @@
-# prisoner
+# Iterative Prisoners' Dilemma tournament
 
-Iterative Prisoners' Dilemma tournament
-(Python)
+## Python
 
 For now:
 
@@ -9,7 +8,7 @@ For now:
 
 Modify the code to create new players, etc.
 
-Iterative Prisoners' Dilemma tournament (Clojure)
+## Clojure
 
 For now:
 
